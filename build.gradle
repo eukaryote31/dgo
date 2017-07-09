@@ -1,4 +1,18 @@
-apply plugin: 'java'
+plugins {
+    id 'java'
+    id 'application'
+    id 'jacoco'
+    id 'com.github.kt3k.coveralls' version '2.6.3'
+}
+
+mainClassName = 'dgo.Main'
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true // coveralls plugin depends on xml format report
+        html.enabled = true
+    }
+}
 
 repositories {
     jcenter()

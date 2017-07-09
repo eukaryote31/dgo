@@ -8,8 +8,10 @@ import dgo.value.ValueFactory;
 
 public interface MCTree {
 	public TreeNode getRoot();
-	
+
 	public void truncateTree(TreeNode newroot);
-	
+
 	public void simulate(Random rnd, RolloutFactory rf, PolicyFactory pf, ValueFactory vf);
+
+	public TreeNode getBestMove(RolloutFactory rf, PolicyFactory pf);
 }

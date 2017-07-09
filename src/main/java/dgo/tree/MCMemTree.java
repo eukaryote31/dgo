@@ -14,6 +14,10 @@ public class MCMemTree implements MCTree {
 		root = new MemTreeNode();
 	}
 	
+	public MCMemTree(MemTreeNode root) {
+		this.root = root;
+	}
+	
 	@Override
 	public TreeNode getRoot() {
 		return root;
@@ -34,14 +38,12 @@ public class MCMemTree implements MCTree {
 	public void simulate(Random rnd, RolloutFactory rf, PolicyFactory pf, ValueFactory vf) {
 		TreeNode traversed = root;
 		for (int i = 0; i < depth; i++) {
-			TreeNode child = root.pickChild(rnd, rf, pf);
+			TreeNode child = traversed.pickChild(rnd, rf, pf);
 			if (child == null)
 				break;
 			else
 				traversed = child;
 		}
-		
-		System.out.println(traversed);
 		
 		int score = vf.build().score(traversed.getGoban());
 		int winner = Integer.signum(score);
@@ -49,6 +51,11 @@ public class MCMemTree implements MCTree {
 		// if both signums are the same, then the signs become positive and indicate a win for that player.
 		boolean didwin = winner * traversed.getTurnState() > 0;
 		traversed.propagateSimulation(didwin);
+	}
+
+	@Override
+	public TreeNode getBestMove(RolloutFactory rf, PolicyFactory pf) {
+		return root.getBestChild(rf, pf);
 	}
 
 }
