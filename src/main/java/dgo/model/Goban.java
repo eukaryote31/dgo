@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -108,39 +109,137 @@ public class Goban implements Serializable {
 	}
 
 	public Goban placeStone(int x, int y, int nstate) {
-		Goban gb = this.setState(x, y, nstate);
-		gb = gb.removeDeadStones(x, y);
-		
-		// if removeDeadStones again is different
-		if (!gb.equals(gb.removeDeadStones(-1, -1)))
+		// placing stones on stones is illegal
+		if (this.getState(x, y) != 0)
 			return null;
-		return gb;
+
+		if (nstate == 0)
+			throw new IllegalArgumentException();
+
+		List<Point> neighbors = getNeighbors(x, y);
+
+		// check if placed stone has liberties itself
+		boolean hasLiberties = false;
+		for (Point p : neighbors) {
+			if (getState(p.x, p.y) == 0) {
+				hasLiberties = true;
+				break;
+			}
+		}
+
+		List<Point> toremove = new LinkedList<>();
+
+		int numoppositeadj = 0;
+		for (Point p : neighbors) {
+			if (getState(p.x, p.y) == 0)
+				continue;
+
+			if (getState(p.x, p.y) == nstate) {
+				// neighbor same state as placed stone
+
+				if (hasLiberties) {
+					// has liberties and is connected, therefore alive
+					continue;
+				} else {
+					Set<Point> s = checkGroup(p, null);
+
+					toremove.addAll(s);
+				}
+			} else {
+				// neighbor different state as placed stone
+
+				numoppositeadj++;
+
+				Set<Point> s = checkGroup(p, new Point(x, y));
+
+				toremove.addAll(s);
+			}
+		}
+
+		// its surrounded on all sides by opposite color
+		if (numoppositeadj == neighbors.size() && toremove.isEmpty())
+			return null;
+
+		if (toremove.isEmpty())
+			return this.setState(x, y, nstate);
+
+		int[] retstate = Arrays.copyOf(this.getState(), WIDTH * HEIGHT);
+		for (Point p : toremove) {
+			// clear dead stones from board
+			retstate[p.x + WIDTH * p.y] = 0;
+		}
+
+		retstate[x + WIDTH * y] = nstate;
+
+		return new Goban(retstate);
 	}
 
+	/**
+	 * Internal method for checking if a group would be alive given a placed
+	 * stone.
+	 */
+	private Set<Point> checkGroup(Point pt, Point newpt) {
+		Set<Point> connected = new HashSet<>();
+		Queue<Point> queue = new LinkedList<>();
+		queue.add(pt);
+		connected.add(pt);
+
+		int nstate = getState(pt.x, pt.y);
+
+		// simple, naïve floodfill
+
+		while (!queue.isEmpty()) {
+			Point p = queue.poll();
+
+			for (Point conn : getNeighbors(p.x, p.y)) {
+				int state = conn.equals(newpt) ? -nstate : getState(conn.x, conn.y);
+
+				if (state == 0) {
+					// if theres a liberty, the entire group is alive
+					return Collections.emptySet();
+				} else if (state != nstate) {
+					// ignore if its opposite color
+					continue;
+				} else {
+					if (connected.contains(conn)) {
+						// ignore if we've already visited it
+						continue;
+					} else {
+						// new one we havent visited yet
+						queue.add(conn);
+						connected.add(conn);
+					}
+				}
+			}
+		}
+
+		return connected;
+	}
+
+	@Deprecated
 	public Goban removeDeadStones(int px, int py) {
 		int[] state = getState();
 		Set<Point> alive = new HashSet<>(361);
-		
+
 		if (px != -1 && py != -1)
 			alive.add(new Point(px, py));
-		
+
 		// quick and dirty algorithm
 		for (int x = 0; x < WIDTH; x++) {
 			for (int y = 0; y < HEIGHT; y++) {
-				
+
 				if (state[x + y * WIDTH] == 0) {
 					Queue<Point> q = new LinkedList<>();
 					q.add(new Point(x, y));
-					
-					
+
 					while (!q.isEmpty()) {
 						Point p = q.poll();
-						
+
 						if (p.x == px && p.y == py)
 							continue;
-						
+
 						List<Point> neighbors = getNeighbors(x, y);
-						for(Point n : neighbors) {
+						for (Point n : neighbors) {
 							// boring cases
 							if (alive.contains(n))
 								continue;
@@ -150,16 +249,16 @@ public class Goban implements Serializable {
 							}
 						}
 					}
-					
+
 				}
 			}
 		}
-		
+
 		int[] newstate = new int[WIDTH * HEIGHT];
 		for (Point p : alive) {
 			newstate[p.x + p.y * HEIGHT] = state[p.x + p.y * HEIGHT];
 		}
-		
+
 		return new Goban(newstate);
 	}
 
@@ -186,7 +285,7 @@ public class Goban implements Serializable {
 	public static boolean validateXY(int x, int y) {
 		return !(x < 0 || y < 0 || x >= WIDTH || y >= HEIGHT);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder ret = new StringBuilder();
@@ -202,7 +301,7 @@ public class Goban implements Serializable {
 
 			ret.append('\n');
 		}
-		
+
 		return ret.toString();
 	}
 }
