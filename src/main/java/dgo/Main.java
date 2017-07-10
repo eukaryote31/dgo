@@ -2,6 +2,10 @@ package dgo;
 
 import java.util.Random;
 
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import dgo.model.Goban;
 import dgo.policy.PolicyFactory;
 import dgo.policy.SimplePolicyFactory;
@@ -29,6 +33,10 @@ public class Main {
 		ValueFactory vf = new SimpleExpValFactory();
 		
 		Goban game = Goban.emptyGoban();
+		
+		// reduce debug spam
+		Logger root = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+		root.setLevel(Level.INFO);
 		
 		while (true) {
 			
