@@ -18,15 +18,9 @@ public class SimpleExpValue implements ValueComponent {
 				int left = gb.validateXY(x - 1, y) ? gb.getState(x - 1, y) : 0;
 				int right = gb.validateXY(x + 1, y) ? gb.getState(x + 1, y) : 0;
 
-				int sum = up + down + left + right;
-
-				// the more of the same type of stone bordering influence, the
-				// better.
-				// since negative numbers represent white, we want a -n sum to
-				// have a -n^2 influence
-				int sq = Integer.signum(sum) * Math.min(50, sum * sum);
+				int sum = Integer.signum(up + down + left + right);
 				
-				ret.setState(x, y, sq);
+				ret.setState(x, y, sum);
 			}
 		}
 		

@@ -11,7 +11,7 @@ import dgo.value.ValueFactory;
 
 public class MCMemTree implements MCTree {
 	final int maxdepth = 20;
-	final int savedepth = 3;
+	final int savedepth = 2;
 	MemTreeNode root;
 
 	public MCMemTree() {

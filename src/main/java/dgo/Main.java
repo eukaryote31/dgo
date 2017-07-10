@@ -33,8 +33,10 @@ public class Main {
 		while (true) {
 			
 			// simulate rounds
-			for(int i = 0; i < 10000; i++) {
-				System.out.println(i);
+			for(int i = 0; i < 32000; i++) {
+				if (i % 100 == 0) {
+					System.out.println(i);
+				}
 				tree.simulate(rnd, rf, pf, vf);
 			}
 			
