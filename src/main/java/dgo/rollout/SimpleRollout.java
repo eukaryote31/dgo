@@ -11,8 +11,8 @@ public class SimpleRollout implements RolloutPolicy {
 		double exploitation = (simulations != 0) ? (wins / simulations) : 0;
 
 		double exploration = 1 / (simulations + 1);
-
-		return policyweight * (exploration + exploitation);
+		if (!Double.isFinite((policyweight) * (exploration + exploitation + 1))) throw new RuntimeException(wins + "/" + simulations + ":" + parentsimulations + "::" + policyweight);
+		return (policyweight) * (exploration + exploitation + 1);
 	}
 
 }

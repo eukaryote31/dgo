@@ -372,8 +372,29 @@ public class SimplePolicy implements PolicyComponent {
 	// I'm getting paid by LoC, right? 
 
 	@Override
-	public GobanValuesD evaluate(Goban gb) {
-		return MAP;
+	public GobanValuesD evaluate(Goban gb, int state) {
+		GobanValuesD gvd = new GobanValuesD(MAP.getState());
+		
+		if (state == 0)
+			return gvd;
+		
+//		// encourage tenuki
+//		for (int x = 0; x < Goban.WIDTH; x++) {
+//			for (int y = 0; y < Goban.HEIGHT; y++) {
+//				if (gb.getState(x, y) == -state) {
+//					final int radius = 1;
+//					for (int dx = Math.max(0, x - radius); dx < Math.min(Goban.WIDTH, x + radius); dx++) {
+//						for (int dy = Math.max(0, y - radius); dy < Math.min(Goban.HEIGHT, y + radius); dy++) {
+//							double d = gvd.getState(dx, dy);
+//							d *= 1.01;
+//
+//							gvd.setState(dx, dy, d);
+//						}
+//					}
+//				}
+//			}
+//		}
+		return gvd;
 	}
 
 }

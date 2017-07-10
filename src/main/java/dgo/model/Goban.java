@@ -9,9 +9,17 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Random;
 import java.util.Set;
 
+import dgo.exception.InvalidMoveException;
+import dgo.policy.PolicyFactory;
+import dgo.rollout.RolloutFactory;
+import dgo.tree.MemTreeNode;
+import dgo.tree.TreeNode;
 import dgo.util.ZobristHash;
+import lombok.Synchronized;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Goban is just any (immutable) board position. Uses a Zobrist hash for
@@ -20,6 +28,7 @@ import dgo.util.ZobristHash;
  * @author eukaryote
  *
  */
+@Slf4j
 public class Goban implements Serializable {
 	private static final long serialVersionUID = -6415776252103592499L;
 
@@ -110,8 +119,10 @@ public class Goban implements Serializable {
 
 	public Goban placeStone(int x, int y, int nstate) {
 		// placing stones on stones is illegal
-		if (this.getState(x, y) != 0)
+		if (this.getState(x, y) != 0) {
+//			log.debug("Tried to put stone on occupied spot");
 			return null;
+		}
 
 		if (nstate == 0)
 			throw new IllegalArgumentException();
@@ -157,8 +168,10 @@ public class Goban implements Serializable {
 		}
 
 		// its surrounded on all sides by opposite color
-		if (numoppositeadj == neighbors.size() && toremove.isEmpty())
+		if (numoppositeadj == neighbors.size() && toremove.isEmpty()) {
+			log.debug("Tried to commit suicide");
 			return null;
+		}
 
 		if (toremove.isEmpty())
 			return this.setState(x, y, nstate);
@@ -296,7 +309,7 @@ public class Goban implements Serializable {
 				else if (getState(x, y) == -1)
 					ret.append('O');
 				else
-					ret.append(' ');
+					ret.append('+');
 			}
 
 			ret.append('\n');

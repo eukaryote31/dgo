@@ -148,10 +148,9 @@ public class MemTreeNode implements TreeNode {
 
 		if (this.isRoot()) {
 
-			System.out.println(sims);
 			return;
 		}
-		
+
 
 		// flip outcome, because parent node is move by opposite player
 		parent.propagateSimulation(!won);
@@ -161,7 +160,7 @@ public class MemTreeNode implements TreeNode {
 	public double getScore(RolloutFactory rf, PolicyFactory pf) {
 		// TODO: compute once and store in parent
 		return rf.build().score(this.getWins(), this.getSimulations(), this.getParent().getSimulations(),
-				pf.build().evaluate(this.getGoban()).getState(this.getX(), this.getY()));
+				pf.build().evaluate(this.getGoban(), 0).getState(this.getX(), this.getY()));
 	}
 
 	@Override

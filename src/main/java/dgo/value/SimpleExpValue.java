@@ -17,7 +17,6 @@ public class SimpleExpValue implements ValueComponent {
 				int down = gb.validateXY(x, y - 1) ? gb.getState(x, y - 1) : 0;
 				int left = gb.validateXY(x - 1, y) ? gb.getState(x - 1, y) : 0;
 				int right = gb.validateXY(x + 1, y) ? gb.getState(x + 1, y) : 0;
-				int original = gb.getState(x, y);
 
 				int sum = up + down + left + right;
 
@@ -25,8 +24,8 @@ public class SimpleExpValue implements ValueComponent {
 				// better.
 				// since negative numbers represent white, we want a -n sum to
 				// have a -n^2 influence
-				int sq = original * original * Integer.signum(sum) + sum;
-
+				int sq = Integer.signum(sum) * Math.min(50, sum * sum);
+				
 				ret.setState(x, y, sq);
 			}
 		}
@@ -36,7 +35,7 @@ public class SimpleExpValue implements ValueComponent {
 
 	@Override
 	public GobanValuesI evaluate(Goban gb) {
-		final int cycles = 3;
+		final int cycles = 2;
 		
 		GobanValuesI gvi = new GobanValuesI(gb.getState());
 		for (int i = 0; i < cycles; i++) {

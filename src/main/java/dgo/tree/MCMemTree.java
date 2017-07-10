@@ -2,22 +2,26 @@ package dgo.tree;
 
 import java.util.Random;
 
+import dgo.model.Goban;
+import dgo.model.GobanValuesD;
+import dgo.model.GobanValuesI;
 import dgo.policy.PolicyFactory;
 import dgo.rollout.RolloutFactory;
 import dgo.value.ValueFactory;
 
 public class MCMemTree implements MCTree {
-	final int depth = 30;
+	final int maxdepth = 20;
+	final int savedepth = 3;
 	MemTreeNode root;
-	
+
 	public MCMemTree() {
 		root = new MemTreeNode();
 	}
-	
+
 	public MCMemTree(MemTreeNode root) {
 		this.root = root;
 	}
-	
+
 	@Override
 	public TreeNode getRoot() {
 		return root;
@@ -37,18 +41,61 @@ public class MCMemTree implements MCTree {
 	@Override
 	public void simulate(Random rnd, RolloutFactory rf, PolicyFactory pf, ValueFactory vf) {
 		TreeNode traversed = root;
-		for (int i = 0; i < depth; i++) {
+		for (int i = 0; i < savedepth; i++) {
 			TreeNode child = traversed.pickChild(rnd, rf, pf);
-			if (child == null)
+			if (child == null) {
 				break;
-			else
+			} else {
 				traversed = child;
+			}
 		}
-		
-		int score = vf.build().score(traversed.getGoban());
-		int winner = Integer.signum(score);
-		
-		// if both signums are the same, then the signs become positive and indicate a win for that player.
+
+		Goban gb = traversed.getGoban();
+
+		int nstate = -traversed.getTurnState();
+		for (int i = 0; i < maxdepth; i++) {
+			GobanValuesD policyvals = pf.build().evaluate(gb, nstate);
+
+			double max = -1;
+			int xbest = -1;
+			int ybest = -1;
+
+			for (int x = 0; x < Goban.WIDTH; x++) {
+				for (int y = 0; y < Goban.HEIGHT; y++) {
+					// skip
+					if (gb.placeStone(x, y, nstate) == null)
+						continue;
+					
+					double score = rf.build().score(traversed.getWins(), traversed.getSimulations(),
+							traversed.isRoot() ? traversed.getSimulations() : traversed.getParent().getSimulations(),
+							policyvals.getState(x, y));
+					
+					if (score > max) {
+						max = score;
+						xbest = x;
+						ybest = y;
+					}
+				}
+			}
+			
+			Goban board = gb.placeStone(xbest, ybest, nstate);
+			
+			if (board == null) {
+				// if invalid, replay
+				i--;
+				continue;
+			}
+			
+			gb = board;
+			
+			nstate *= -1;
+		}
+
+		int score = vf.build().score(gb);
+		int winner = Integer.signum(score) * nstate * traversed.getTurnState();
+
+		// if both signums are the same, then the signs become positive and
+		// indicate a win for that player.
 		boolean didwin = winner * traversed.getTurnState() > 0;
 		traversed.propagateSimulation(didwin);
 	}
