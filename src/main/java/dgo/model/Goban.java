@@ -35,6 +35,10 @@ public class Goban implements Serializable {
 	public static final int HEIGHT = 19;
 	public static final int WIDTH = 19;
 
+	public static final byte WHITE = -1;
+	public static final byte NONE = 0;
+	public static final byte BLACK = 1;
+
 	private static final Goban EMPTY = new Goban(new int[WIDTH * HEIGHT], 0);
 
 	private final int[] state;
@@ -103,7 +107,7 @@ public class Goban implements Serializable {
 			return this;
 
 		int newhash;
-		if (nstate == 0) {
+		if (nstate == NONE) {
 			// undo state at (x, y) by xoring it by itself
 			newhash = zobristhash ^ ZobristHash.getIndice(x, y, this.getState(x, y));
 		} else {
@@ -119,7 +123,7 @@ public class Goban implements Serializable {
 
 	public Goban placeStone(int x, int y, int nstate) {
 		// placing stones on stones is illegal
-		if (this.getState(x, y) != 0) {
+		if (this.getState(x, y) != NONE) {
 //			log.debug("Tried to put stone on occupied spot");
 			return null;
 		}
@@ -132,7 +136,7 @@ public class Goban implements Serializable {
 		// check if placed stone has liberties itself
 		boolean hasLiberties = false;
 		for (Point p : neighbors) {
-			if (getState(p.x, p.y) == 0) {
+			if (getState(p.x, p.y) == NONE) {
 				hasLiberties = true;
 				break;
 			}
@@ -142,7 +146,7 @@ public class Goban implements Serializable {
 
 		int numoppositeadj = 0;
 		for (Point p : neighbors) {
-			if (getState(p.x, p.y) == 0)
+			if (getState(p.x, p.y) == NONE)
 				continue;
 
 			if (getState(p.x, p.y) == nstate) {

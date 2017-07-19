@@ -172,8 +172,6 @@ public class MemTreeNode implements TreeNode {
 		for (TreeNode tn : getChildren()) {
 			double score = tn.getScore(rf, pf);
 
-			System.out.println(score);
-
 			if (score > bestscore) {
 				bestscore = score;
 				best = tn;
