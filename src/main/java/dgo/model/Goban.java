@@ -233,52 +233,6 @@ public class Goban implements Serializable {
 		return connected;
 	}
 
-	@Deprecated
-	public Goban removeDeadStones(int px, int py) {
-		int[] state = getState();
-		Set<Point> alive = new HashSet<>(361);
-
-		if (px != -1 && py != -1)
-			alive.add(new Point(px, py));
-
-		// quick and dirty algorithm
-		for (int x = 0; x < WIDTH; x++) {
-			for (int y = 0; y < HEIGHT; y++) {
-
-				if (state[x + y * WIDTH] == 0) {
-					Queue<Point> q = new LinkedList<>();
-					q.add(new Point(x, y));
-
-					while (!q.isEmpty()) {
-						Point p = q.poll();
-
-						if (p.x == px && p.y == py)
-							continue;
-
-						List<Point> neighbors = getNeighbors(x, y);
-						for (Point n : neighbors) {
-							// boring cases
-							if (alive.contains(n))
-								continue;
-							if (state[p.x + p.y * WIDTH] == 0 || state[n.x + n.y * WIDTH] == state[p.x + p.y * WIDTH]) {
-								q.add(n);
-								alive.add(n);
-							}
-						}
-					}
-
-				}
-			}
-		}
-
-		int[] newstate = new int[WIDTH * HEIGHT];
-		for (Point p : alive) {
-			newstate[p.x + p.y * HEIGHT] = state[p.x + p.y * HEIGHT];
-		}
-
-		return new Goban(newstate);
-	}
-
 	public List<Point> getNeighbors(int x, int y) {
 		List<Point> ret = new ArrayList<>(4);
 
